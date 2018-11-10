@@ -7,7 +7,7 @@ Here's how to use it:
 Organise your schemas in version directories, and draw each set together with an index.js that returns an object which contains all the schemas stores by their name as key e.g. ``'root'``
 
 Draw all schemas together with their versions and export from `schemas/index.js`
-```
+```js
 // schemas/index.js
 const V1_SCHEMA_VERSION = "1"
 const V2_SCHEMA_VERSION = "2"
