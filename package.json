@@ -1,0 +1,15 @@
+{
+  "name": "ssb-schema-validation",
+  "version": "1.0.0",
+  "description": "validation for multiple schemas with differing versions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "kgibb8",
+  "license": "ISC",
+  "dependencies": {
+    "is-my-json-valid": "^2.19.0",
+    "ssb-msg-content": "^1.0.1"
+  }
+}
