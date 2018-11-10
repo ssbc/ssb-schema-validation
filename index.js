@@ -23,7 +23,7 @@ module.exports = function (schemas) {
         return false
       }
 
-      const versionConst = versionStrings.find(v => v === content.version)
+      const versionConst = versionStrings.find(v => v === version)
       if (!versionConst) {
         isValid.errors.push({
           field: 'data.version',
@@ -51,9 +51,9 @@ module.exports = function (schemas) {
       if (!schema) {
         isValid.errors.push({
           field: 'data.schema',
-          message: `${schemaName} is not a valid schema`,
-          value: schemaName,
-          type: typeof schemaName
+          message: `${type} is not a valid schema`,
+          value: type,
+          type: typeof type
 
         })
         if (opts.attachErrors) obj.errors = isValid.errors
