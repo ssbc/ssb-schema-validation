@@ -10,7 +10,6 @@ module.exports = function (schemas) {
     return function isValid (obj, opts = {}) {
       isValid.errors = []
       const versionStrings = Object.keys(schemas)
-      const versions = Object.values(schemas)
       const content = getContent(obj)
       const version = content.version
 
