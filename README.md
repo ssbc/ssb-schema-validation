@@ -4,7 +4,7 @@ Returns a function that takes an ssb message and will check first against versio
 
 Here's how to use it:
 
-Organise your schemas in version directories, and draw each set together with an index.js that returns an object which contains all the schemas stores by their name as key e.g. ``'root'``
+Organise your schemas in version directories, and draw each set together with an index.js that returns an object which contains all the schemas stores by their name as key e.g. ``'post'``
 
 Ensure our message declares a verision, else we'll get an error.
 ```js
@@ -72,13 +72,13 @@ const schemas = require('./schemas')
 const validate = require('ssb-schema-validation')
 
 // Returns a function that takes an obj and opts.
-module.exports = validate(schemas).with('root')
+module.exports = validate(schemas).with('post')
 ```
 
 The result being when used...
 ```js
-const isRoot = require('./isRoot')
-var valid = isRoot(msg, { attachErrors: true })
+const isPost = require('./isPost')
+var valid = isPost(msg, { attachErrors: true })
 if (valid) {
   render(msg)
 } else {

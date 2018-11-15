@@ -1,5 +1,5 @@
 {
-  "name": "ssb-schema-validation",
+  "name": "@ssbc/ssb-schema-validation",
   "version": "1.0.0",
   "description": "Validating SSB messages with JSON schema using multiple versions",
   "main": "index.js",
@@ -18,5 +18,9 @@
   },
   "devDependencies": {
     "standard": "^12.0.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/ssbc/ssb-schema-validation/issues"
+  },
+  "homepage": "https://github.com/ssbc/ssb-schema-validation#readme"
 }
