@@ -1,6 +1,6 @@
 {
   "name": "@ssbc/ssb-schema-validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Validating SSB messages with JSON schema using multiple versions",
   "main": "index.js",
   "scripts": {
