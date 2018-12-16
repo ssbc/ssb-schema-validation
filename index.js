@@ -2,69 +2,72 @@ const Validator = require('is-my-json-valid')
 const getContent = require('ssb-msg-content')
 
 module.exports = function (schemas) {
-  return {
-    with: messageType
-  }
+  if (!Array.isArray(schemas)) throw new Error('ssb-schema-validation expects an Array')
 
-  function messageType (type) {
-    return function isValid (obj, opts = {}) {
-      isValid.errors = []
-      const versionStrings = Object.keys(schemas)
-      const content = getContent(obj)
-      const version = content.version
+  // build validators for each schema once
+  const validators = Validators(schemas)
 
-      if (!version) {
-        isValid.errors.push({
-          field: 'data.version',
-          message: 'is not provided'
-        })
-        if (opts.attachErrors) obj.errors = isValid.errors
-        return false
-      }
+  return function isValid (msg, opts = {}) {
+    isValid.errors = []
 
-      const versionConst = versionStrings.find(v => v === version)
-      if (!versionConst) {
-        isValid.errors.push({
-          field: 'data.version',
-          message: 'is not a valid version',
-          value: content.version,
-          type: typeof content.version
-        })
-        if (opts.attachErrors) obj.errors = isValid.errors
-        return false
-      }
+    const content = getContent(msg)
+    const { version } = content
 
-      const versionSchemas = schemas[versionConst]
-      if (!versionSchemas) {
-        isValid.errors.push({
-          field: 'data.version',
-          message: `No schemas match version ${versionConst}`,
-          value: versionConst,
-          type: typeof versionConst
-        })
-        if (opts.attachErrors) obj.errors = isValid.errors
-        return false
-      }
-
-      const schema = versionSchemas[type]
-      if (!schema) {
-        isValid.errors.push({
-          field: 'data.schema',
-          message: `${type} is not a valid schema`,
-          value: type,
-          type: typeof type
-
-        })
-        if (opts.attachErrors) obj.errors = isValid.errors
-        return false
-      }
-
-      const validator = Validator(schema, { verbose: true })
-      const result = validator(content)
-
-      isValid.errors = validator.errors
-      if (opts.attachErrors) obj.errors = isValid.errors
-      return result
+    if (!version) {
+      isValid.errors.push({
+        field: 'data.version',
+        message: 'is not provided'
+      })
+      if (opts.attachErrors) msg.errors = isValid.errors
+      return false
     }
+
+    const validator = validators.find(v => v.version === version)
+    // WARNING: assumes there's only one validator per version!
+    if (!validator) {
+      isValid.errors.push({
+        field: 'data.version',
+        message: `No schemas match version ${version}`,
+        value: version,
+        type: typeof version
+      })
+      if (opts.attachErrors) msg.errors = isValid.errors
+      return false
+    }
+
+    const result = validator(content)
+
+    isValid.errors = validator.errors
+    if (opts.attachErrors) msg.errors = isValid.errors
+    return result
   }
+}
+
+// helpers
+
+function Validators (schemas) {
+  // TODO check all schemas are for same type?
+
+  return schemas.map(schema => {
+    const validator = Validator(schema, { verbose: true })
+    validator.type = getType(schema)
+    validator.version = getVersion(schema)
+
+    return validator
+  })
+}
+
+function getType (schema) {
+  return trimRegex(schema.properties.type.pattern)
+}
+
+function getVersion (schema) {
+  // this assumes string versions, will need modifying if someone uses integer versions
+  return trimRegex(schema.properties.version.pattern)
+}
+
+function trimRegex (regexString = '') {
+  return regexString
+    .replace(/^\^/, '')
+    .replace(/\$$/, '')
 }
