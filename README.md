@@ -1,6 +1,6 @@
 # ssb-schema-validation
 
-Returns a function that takes an ssb message and will check first against version, search for a matching schema, then validate against the correct schema and return truthy or falsey with an errorset.
+Returns a function that takes an ssb message and will check first against version, search for a matching schema, then validate against the correct schema and return truthy or falsey with an errorset. Accepts variable version schemas, so we can increment versions of different models / schemas separately.
 
 Here's how to use it:
 
@@ -26,53 +26,52 @@ Example project structure could look like this...
 ├── README.md
 ├── schemas
 │   ├── index.js
-│   ├── v1
+│   ├── post
 │   │   ├── index.js
-│   │   ├── post.js
-│   │   └── version.js
-│   └── v2
+│   │   └── v1.js
+│   └── comment
 │       ├── index.js
-│       ├── post.js
-│       └── version.js
+│       ├── v1.js
+│       └── v2.js
 └── validators
     ├── isPost.js
     └── index.js
-```
-
-Make sure we export the relevant schemas in `index.js`.
-```js
-// schemas/v1/index.js
-
-module.exports = {
-  post: require('./post')
-}
-
-// schemas/v2/index.js
-
-module.exports = {
-  post: require('./post')
-}
 ```
 
 Draw all schemas together with their versions and export from `schemas/index.js`
 
 ```js
 // schemas/index.js
+
 module.exports = {
-  "1.0.0": require('./v1'),
-  "2.0.0": require('./v2')
+  post: [
+    require('./v1'),
+  ],
+  comment: [
+    require('./v1')
+    require('./v2')
+  ]
 }
 ```
 
-Then create a new validator which passes the schemas to the validator along with the name of the schema. This will return your validator that takes an ssb message and options, and returns a boolean.
+Then create a new validator which passes the relevant schemas to the validator. This will return your validator that takes an ssb message and options, and returns a boolean.
 
 ```js
 // isPost.js
+
 const schemas = require('./schemas')
-const validate = require('ssb-schema-validation')
+const Validator = require('ssb-schema-validation')
 
 // Returns a function that takes an obj and opts.
-module.exports = validate(schemas).with('post')
+module.exports = Validator(schemas.post)
+
+// isComment.js
+
+const schemas = require('./schemas')
+const Validator = require('ssb-schema-validation')
+
+// Returns a function that takes an obj and opts.
+module.exports = Validator(schemas.comment)
 ```
 
 The result being when used...
