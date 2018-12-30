@@ -29,7 +29,7 @@ For a live example see e.g. [ssb-dark-crystal-schema](https://github.com/blockad
 ### `Validator(schemas) => fn`
 
 Takes argument
-- `schemas` - an array of JSON-schema.
+- `schemas` - an array of JSON-schema. These schemas **must require messages to have `type` and `version` fields**
 
 Returns a function `validator` based on those schemas.
 
@@ -37,7 +37,6 @@ Returns a function `validator` based on those schemas.
 
 Takes arguments:
 - `msg` - a full ssb message, or the `content` field of such a message. Supporting both means you can use this validator to easily validate content either before writing to the database, or for reading from the database.
-
 - `opts` (optional) - an object of form `{ attachErrors: Boolean }`, settings attachErrors: true mutates the original message by attaching any errors found during in validation. This option is `false` by default i.e. disabled.
 
 Returns a Boolean: true/ false
