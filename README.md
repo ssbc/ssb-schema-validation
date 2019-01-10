@@ -1,87 +1,55 @@
 # ssb-schema-validation
 
-Returns a function that takes an ssb message and will check first against version, search for a matching schema, then validate against the correct schema and return truthy or falsey with an errorset. Accepts variable version schemas, so we can increment versions of different models / schemas separately.
+Builds message validators for ssb based on JSON-schema. Specifically designed for handling multiple different _versions_ of a schema for a particular message `type` (e.g. when you add new requirements, or change the encoding of a particular field and publish a new version of the schema)
 
-Here's how to use it:
+**NOTE** - this requires schemas which have _both_ `type` and `version` fields.
 
-Organise your schemas in version directories, and draw each set together with an index.js that returns an object which contains all the schemas stores by their name as key e.g. ``'post'``
+## Example Usage
 
-Ensure our message declares a verision, else we'll get an error.
-```js
+Here's an example message that could validate as truthy...
+
+```
 {
-  type: 'post',
-  version: '1.0.0',
-  body: 'tra-lala-lala-lala'
+  type: 'reply',
+  version: '1.0.0'
 }
 ```
 
-And export a schema for each version.
-
-Example project structure could look like this...
-
-```
-├── index.js
-├── package.json
-├── package-lock.json
-├── README.md
-├── schemas
-│   ├── index.js
-│   ├── post
-│   │   ├── index.js
-│   │   └── v1.js
-│   └── comment
-│       ├── index.js
-│       ├── v1.js
-│       └── v2.js
-└── validators
-    ├── isPost.js
-    └── index.js
-```
-
-Draw all schemas together with their versions and export from `schemas/index.js`
+We inject all the relevant schemas into the validator. Any message passed will be validated based on the type and the version as determined by your schema.
 
 ```js
-// schemas/index.js
+var Validator = require('ssb-schema-validation')
 
-module.exports = {
-  post: [
-    require('./v1'),
-  ],
-  comment: [
-    require('./v1')
-    require('./v2')
-  ]
-}
+var replySchemas = [
+  require('./schemas/reply/v1')
+  require('./schemas/reply/v2')
+]
+
+var isReply = Validator(replySchemas)
+
+isReply(msg)
+// => true / false
+console.log(isReply.errors)
+// => some errors
 ```
 
-Then create a new validator which passes the relevant schemas to the validator. This will return your validator that takes an ssb message and options, and returns a boolean.
+For a live example see e.g. [ssb-dark-crystal-schema](https://github.com/blockades/ssb-dark-crystal-schema)
 
-```js
-// isPost.js
+## API
 
-const schemas = require('./schemas')
-const Validator = require('ssb-schema-validation')
+### `Validator(schemas) => fn`
 
-// Returns a function that takes an obj and opts.
-module.exports = Validator(schemas.post)
+Takes argument
+- `schemas` - an array of JSON-schema. These schemas **must require messages to have `type` and `version` fields**
 
-// isComment.js
+Returns a function `validator` based on those schemas.
 
-const schemas = require('./schemas')
-const Validator = require('ssb-schema-validation')
+### `validator(msg, opts) => Bool`
 
-// Returns a function that takes an obj and opts.
-module.exports = Validator(schemas.comment)
-```
+Takes arguments:
+- `msg` - a full ssb message, or the `content` field of such a message. Supporting both means you can use this validator to easily validate content either before writing to the database, or for reading from the database.
+- `opts` (optional) - an object of form `{ attachErrors: Boolean }`, settings attachErrors: true mutates the original message by attaching any errors found during in validation. This option is `false` by default i.e. disabled.
 
-The result being when used...
-```js
-const isPost = require('./isPost')
-var valid = isPost(msg, { attachErrors: true })
-if (valid) {
-  render(msg)
-} else {
-  render(msg.errors)
-}
-```
+Returns a Boolean: true/ false
 
+**Note** - if the validator returns `false`, then details about _why_ the message didn't pass validation can be found under `validator.errors`. This is reset after each message is passed in.
