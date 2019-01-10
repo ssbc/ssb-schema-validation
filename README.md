@@ -6,6 +6,17 @@ Builds message validators for ssb based on JSON-schema. Specifically designed fo
 
 ## Example Usage
 
+Here's an example message that could validate as truthy...
+
+```
+{
+  type: 'reply',
+  version: '1.0.0'
+}
+```
+
+We inject all the relevant schemas into the validator. Any message passed will be validated based on the type and the version as determined by your schema.
+
 ```js
 var Validator = require('ssb-schema-validation')
 
